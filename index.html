@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WhyApp v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background:#dcdbd4;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  background:#075e54;
+  color:#fff;
+  padding:15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+.app-title { font-size: 20px; font-weight: bold; }
+#status{ font-size: 12px; opacity: 0.9; }
+#typing{ font-size:12px; color: #555; font-style: italic; min-height: 15px; padding: 0 20px; }
+
+#join, #chatApp{
+  padding:20px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+#chatApp{ display:none; flex:1; flex-direction:column; height: 100%; position: relative;}
+
+input, button{
+  width:100%; padding:12px; margin-bottom:10px; font-size:16px;
+  box-sizing: border-box; border: 1px solid #ddd; border-radius: 20px; outline: none;
+}
+button{
+  background:#25d366; border:none; color:#fff; cursor: pointer; font-weight: bold;
+  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+}
+button:hover { background:#128c7e; }
+
+/* Chat Area */
+#chat{
+  flex:1; overflow-y:auto; margin-bottom:10px; padding: 15px;
+  background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
+  background-color: #e5ddd5; border-radius: 10px;
+}
+
+/* Messages */
+.msg{
+  max-width:75%; padding:8px 10px; margin:4px 0; border-radius:8px; font-size:15px;
+  word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+}
+.me{ background:#dcf8c6; margin-left:auto; border-top-right-radius: 0; }
+.other{ background:#fff; margin-right:auto; border-top-left-radius: 0; }
+.msg b { font-size: 12px; color: #075e54; margin-bottom: 2px; }
+.time{ font-size:10px; color: #999; text-align:right; margin-top: 2px; }
+
+/* Call Link Style */
+.call-link {
+  background: #e1ffc7; padding: 10px; border-radius: 5px; text-decoration: none; color: #075e54; display: block; margin-top: 5px; border: 1px solid #25d366;
+  font-weight: bold; text-align: center;
+}
+
+/* Footer Controls */
+.footer { display:flex; gap:5px; position: relative; }
+.icon-btn { width: 45px; border-radius: 50%; font-size: 20px; padding: 0; display: flex; align-items: center; justify-content: center; }
+.emoji-btn { background: #fff; color: #555; border: 1px solid #ccc; }
+.send-btn { background: #25d366; }
+
+/* Emoji Picker */
+#emojiPicker {
+  display: none; position: absolute; bottom: 60px; left: 0; background: #fff;
+  border: 1px solid #ccc; padding: 5px; border-radius: 5px; width: 100%;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; height: 150px; overflow-y: auto;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+.emoji { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
+.emoji:hover { background: #ddd; border-radius: 5px; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>WhyApp <span style="font-size:12px; opacity:0.7">v2.0</span></div>
+  <div id="status" style="font-size:12px;">Connecting...</div>
+</div>
+
+<div id="join">
+  <h3 style="text-align:center; color:#075e54;">Create/Join Room</h3>
+  <input id="name" placeholder="Your Name">
+  <input id="room" placeholder="Room Name (e.g. Family)">
+  <input id="pass" type="password" placeholder="Password">
+  <button onclick="joinRoom()">Enter Chat</button>
+</div>
+
+<div id="chatApp">
+  <div id="chat"></div>
+  <div id="typing"></div>
+  
+  <div id="emojiPicker" style="display:none;"></div>
+
+  <div class="footer">
+    <button class="icon-btn emoji-btn" onclick="toggleEmoji()">😀</button>
+    <button class="icon-btn emoji-btn" onclick="startVideoCall()" style="color: #075e54;">🎥</button>
+    <input id="msg" placeholder="Type message..." autocomplete="off">
+    <button class="icon-btn send-btn" onclick="send()">➤</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+// ---------------------------------------------------------
+// ⚠️ APNI CONFIG YAHAN PASTE KAREIN
+// ---------------------------------------------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyBTylZZYTnrPzA-oPUUjP9oCe_pKvcGYUg",
+  authDomain: "igno-chat.firebaseapp.com",
+  databaseURL: "https://igno-chat-default-rtdb.firebaseio.com",
+  projectId: "igno-chat",
+  storageBucket: "igno-chat.firebasestorage.app",
+  messagingSenderId: "463033782139",
+  appId: "1:463033782139:web:68679a382a319bccb877de"
+};
+
+// Init Firebase
+try { firebase.initializeApp(firebaseConfig); } catch(e){ console.error(e); }
+
+let uid, userRef, msgRef, roomName, userName;
+
+// Auth
+firebase.auth().signInAnonymously().then(u => {
+  uid = u.user.uid;
+  document.getElementById("status").innerText = "Ready to Join";
+});
+
+// Join Room Logic
+function joinRoom(){
+  userName = document.getElementById("name").value.trim();
+  roomName = document.getElementById("room").value.trim().toLowerCase();
+  let p = document.getElementById("pass").value.trim();
+
+  if(!userName || !roomName || !p) return alert("Fill all fields");
+
+  // Check Room & Password
+  firebase.database().ref("rooms/"+roomName).once("value", s => {
+    if(!s.exists()){
+        // Create Room automatically if not exists
+        firebase.database().ref("rooms/"+roomName).set({password: p});
+    } else {
+        if(s.val().password !== p) return alert("Wrong Password!");
+    }
+
+    // UI Switch
+    document.getElementById("join").style.display="none";
+    document.getElementById("chatApp").style.display="flex";
+    document.getElementById("status").innerText = "Online";
+
+    // Presence
+    userRef = firebase.database().ref("rooms/"+roomName+"/users/"+uid);
+    userRef.set({ name: userName, online: true, typing: false });
+    userRef.onDisconnect().update({ online: false });
+
+    // Listeners
+    msgRef = firebase.database().ref("rooms/"+roomName+"/messages");
+    listenMessages();
+    listenTyping();
+  });
+}
+
+// Send Message
+function send(){
+  let inp = document.getElementById("msg");
+  let t = inp.value.trim();
+  if(!t) return;
+  
+  msgRef.push({
+    text: t, type: 'text', name: userName, uid: uid,
+    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+  });
+  inp.value = "";
+  document.getElementById("emojiPicker").style.display = "none";
+}
+
+// Video Call Logic (Free Jitsi Link)
+function startVideoCall(){
+  let callID = roomName + "_" + Math.floor(Math.random()*1000);
+  let link = "https://meet.jit.si/" + callID;
+  
+  msgRef.push({
+    text: link, type: 'call', name: userName, uid: uid,
+    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+  });
+}
+
+// Listen Messages
+function listenMessages(){
+  let chat = document.getElementById("chat");
+  msgRef.limitToLast(50).on("child_added", s => {
+    let m = s.val();
+    let d = document.createElement("div");
+    d.className = "msg " + (m.uid === uid ? "me" : "other");
+    
+    let content = "";
+    if(m.type === 'call'){
+       content = `<div style="text-align:center;">
+                    📞 <b>Video Call Started</b><br>
+                    <a href="${m.text}" target="_blank" class="call-link">Join Video Call</a>
+                  </div>`;
+    } else {
+       // Secure Text
+       let safeText = document.createElement('div');
+       safeText.textContent = m.text;
+       content = `<b>${m.name}</b><br>` + safeText.innerHTML;
+    }
+
+    d.innerHTML = content + `<div class='time'>${m.time}</div>`;
+    chat.appendChild(d);
+    chat.scrollTop = chat.scrollHeight;
+  });
+}
+
+// Typing Indicator
+function listenTyping(){
+  let inp = document.getElementById("msg");
+  inp.addEventListener("input", () => {
+    if(userRef) userRef.update({ typing: inp.value.length > 0 });
+  });
+  
+  firebase.database().ref("rooms/"+roomName+"/users").on("value", s => {
+    let txt = "";
+    s.forEach(u => {
+      if(u.key !== uid && u.val().typing) txt = u.val().name + " is typing...";
+    });
+    document.getElementById("typing").innerText = txt;
+  });
+}
+
+// Emoji Logic
+const emojis = ["😀","😂","😍","🥺","😎","😭","😡","👍","👎","🎉","❤️","🔥","💩","👻","💀","👀","🚀","💯"];
+const picker = document.getElementById("emojiPicker");
+emojis.forEach(e => {
+  let s = document.createElement("span");
+  s.className = "emoji"; s.innerText = e;
+  s.onclick = () => {
+    document.getElementById("msg").value += e;
+    document.getElementById("msg").focus();
+  };
+  picker.appendChild(s);
+});
+
+function toggleEmoji(){
+  picker.style.display = (picker.style.display === "none") ? "grid" : "none";
+}
+</script>
+</body>
+</html>
