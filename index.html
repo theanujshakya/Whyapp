@@ -1,269 +1,1474 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>WhyApp v2</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07110d">
+<title>WhyApp Realtime</title>
 <style>
-body{
-  margin:0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background:#dcdbd4;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-.header{
-  background:#075e54;
-  color:#fff;
-  padding:15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  z-index: 10;
-}
-.app-title { font-size: 20px; font-weight: bold; }
-#status{ font-size: 12px; opacity: 0.9; }
-#typing{ font-size:12px; color: #555; font-style: italic; min-height: 15px; padding: 0 20px; }
-
-#join, #chatApp{
-  padding:20px;
-  max-width: 500px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-}
-#chatApp{ display:none; flex:1; flex-direction:column; height: 100%; position: relative;}
-
-input, button{
-  width:100%; padding:12px; margin-bottom:10px; font-size:16px;
-  box-sizing: border-box; border: 1px solid #ddd; border-radius: 20px; outline: none;
-}
-button{
-  background:#25d366; border:none; color:#fff; cursor: pointer; font-weight: bold;
-  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
-}
-button:hover { background:#128c7e; }
-
-/* Chat Area */
-#chat{
-  flex:1; overflow-y:auto; margin-bottom:10px; padding: 15px;
-  background-image: url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png");
-  background-color: #e5ddd5; border-radius: 10px;
+:root{--bg:#07110d;--panel:#0d1914;--panel2:#101f19;--line:#21372e;--text:#f4f8f5;--muted:#91a79c;--green:#25d366;--bubble:#13241d;--mine:#0d4a32}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#123d2d,transparent 34%),radial-gradient(circle at 100% 100%,#102d21,transparent 36%),var(--bg);color:var(--text);font-family:system-ui,sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}.wrap{width:min(1100px,94%);margin:auto}.hidden{display:none!important}
+nav{height:64px;border-bottom:1px solid var(--line);background:#07110ddd;backdrop-filter:blur(15px)}.nav{height:100%;display:flex;justify-content:space-between;align-items:center}.logo{font-size:20px;font-weight:900}.logo i{font-style:normal;color:var(--green)}.status{font-size:11px;color:var(--muted)}.status.ok{color:#8ff0b6}
+.hero{text-align:center;padding:58px 0 30px}.badge{border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:12px}.hero h1{font-size:clamp(48px,9vw,80px);line-height:.95;letter-spacing:-4px;margin:17px 0 10px;background:linear-gradient(105deg,#fff,#baffd6,#25d366);color:transparent;background-clip:text}.hero p{color:var(--muted);max-width:650px;margin:auto}
+.auth{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-bottom:60px}.card{background:#0d1914ee;border:1px solid var(--line);border-radius:21px;padding:21px}.card h2{margin:0 0 5px}.sub{color:var(--muted);font-size:13px;margin:0 0 18px}.field{margin-bottom:12px}.field label{display:block;color:#bfd0c7;font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:6px}.field input{width:100%;padding:12px;background:#08110d;border:1px solid var(--line);border-radius:11px;color:var(--text);outline:0}.pass{position:relative}.pass input{padding-right:65px}.show{position:absolute;right:5px;top:5px;border:0;background:transparent;color:var(--green);padding:7px;font-size:12px;font-weight:800}.primary{width:100%;padding:12px;border:0;border-radius:11px;background:var(--green);color:#062015;font-weight:900}.secondary{width:100%;padding:10px;border:1px solid var(--line);border-radius:11px;background:var(--panel2);color:var(--text);margin-top:8px}.note{font-size:10px;color:#6f867b;line-height:1.5;margin-top:10px}
+#chatApp{height:calc(100vh - 64px)}.shell{height:100%;display:grid;grid-template-columns:260px 1fr;border-left:1px solid var(--line);border-right:1px solid var(--line);background:#09130f}.side{background:#0a1511;border-right:1px solid var(--line);padding:14px;overflow:auto}.profile{display:flex;align-items:center;gap:9px;padding:9px;background:#0f2119;border:1px solid var(--line);border-radius:13px}.avatar,.roomavatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#173b2c;color:#b5ffd3;font-weight:900}.profile div:nth-child(2){min-width:0;flex:1}.profile b,.profile small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.profile small{color:var(--muted);font-size:10px}.roombox{display:flex;align-items:center;gap:9px;padding:12px 2px}.roomavatar{width:34px;height:34px}.roombox small{display:block;color:var(--muted);font-size:10px}.side h4{margin:18px 0 7px;font-size:12px;color:#b9cbc1}.member{padding:7px 0;border-bottom:1px solid #193027;font-size:12px}.dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#71857c;margin-right:6px}.dot.on{background:var(--green)}
+.main{display:flex;flex-direction:column;min-width:0}.head{height:62px;padding:10px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:relative}.head small{display:block;color:var(--muted);font-size:10px}.actions{display:flex;gap:6px}.round{width:37px;height:37px;border-radius:50%;border:1px solid var(--line);background:#102019;color:var(--text)}.menuWrap{position:relative}.menu{display:none;position:absolute;right:0;top:43px;width:180px;background:#0d1914;border:1px solid var(--line);border-radius:12px;padding:5px;z-index:10;box-shadow:0 16px 40px #0008}.menu.open{display:block}.menu button{display:block;width:100%;text-align:left;padding:9px;background:none;border:0;color:var(--text);border-radius:8px;font-size:12px}.menu button:hover{background:#14271f}.messages{flex:1;display:flex;flex-direction:column;align-items:stretch;overflow:auto;padding:17px;background:radial-gradient(circle at 50% 0,#112a20,transparent 52%)}.msgActions{display:flex;gap:4px;margin-top:6px;opacity:0;transition:opacity .15s}.bubble:hover .msgActions,.bubble:focus-within .msgActions,.bubble.showActions .msgActions{opacity:.9}.msgActions button{border:1px solid #29483b;background:#102019;color:#b7c9c0;border-radius:7px;padding:5px 7px;font-size:10px;cursor:pointer}.msgActions button:hover{background:#173126}.edited{font-size:9px;color:#789187;margin-left:4px}.replyQuote{border-left:3px solid var(--green);background:#0b1914;padding:5px 7px;border-radius:6px;color:#9eb5aa;font-size:10px;margin-bottom:5px}.reactionRow{display:flex;gap:4px;margin-top:5px}.reaction{border:1px solid #315343;background:#10271e;color:#d9eee4;border-radius:999px;padding:2px 7px;font-size:10px}.replyPreview{display:none;order:4;margin:0 9px 6px;padding:7px 9px;background:#10271e;border-left:3px solid var(--green);color:#b9ccc3;font-size:10px;border-radius:7px;min-height:18px}.replyPreview.show{display:block}.bubble{align-self:flex-start;width:fit-content;max-width:75%;padding:9px 11px;border:1px solid #1f3b30;background:var(--bubble);border-radius:14px;margin:7px 0}.mine{align-self:flex-end;margin-left:0;background:var(--mine);border-color:#1d6848}.name{font-size:10px;color:#8eeab6;font-weight:800}.body{margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere}.meta{text-align:right;color:#71867c;font-size:9px;margin-top:3px}.typing{flex:0 0 22px;height:22px;padding:0 14px;display:flex;align-items:center;gap:5px;background:#0a1511;color:#8fa79c;font-size:10px;transition:opacity .15s}.typingDots{display:none;align-items:center;gap:3px}.typingDots.show{display:flex}.typingDots i{width:5px;height:5px;border-radius:50%;background:#8fa79c;animation:typingBounce 1.2s infinite ease-in-out}.typingDots i:nth-child(2){animation-delay:.15s}.typingDots i:nth-child(3){animation-delay:.3s}@keyframes typingBounce{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-3px);opacity:1}}.composer{padding:6px 8px;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px;background:#0a1511}.composer{order:5}.composer textarea{flex:1;resize:none;min-height:38px;max-height:88px;background:#101f19;border:1px solid var(--line);border-radius:13px;color:var(--text);padding:8px 10px;outline:0;line-height:20px}.emojiBtn{width:38px;height:38px;flex:0 0 38px;font-size:17px}.send{width:40px;height:40px;border:0;border-radius:50%;background:var(--green);font-weight:900}.emoji{display:none;position:absolute;bottom:58px;left:8px;right:8px;max-height:230px;overflow-y:auto;background:#102019;border:1px solid var(--line);border-radius:12px;padding:8px;grid-template-columns:repeat(8,1fr);gap:2px;z-index:25}.emoji.open{display:grid}.emoji button{border:0;background:none;font-size:21px;padding:5px;border-radius:7px}.emoji button:hover{background:#19352a}.composerWrap{position:relative}.toast{position:fixed!important;left:50%!important;right:auto!important;top:auto!important;bottom:18px!important;width:fit-content!important;max-width:min(90vw,360px)!important;height:fit-content!important;max-height:42px!important;min-width:0!important;min-height:0!important;box-sizing:border-box!important;display:block!important;flex:none!important;grid:none!important;transform:translate(-50%,20px);opacity:0;background:#effff5;color:#062015;padding:9px 13px;border-radius:10px;font-weight:800;line-height:18px;transition:.2s;z-index:99999;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){
+  .auth{grid-template-columns:1fr}
+  .shell{grid-template-columns:1fr;position:relative}
+  .side{display:flex;position:fixed;z-index:1000;left:0;top:64px;bottom:0;width:min(310px,86vw);max-width:86vw;transform:translateX(-105%);transition:transform .24s ease;box-shadow:18px 0 45px #0009;padding:12px;overflow-y:auto}
+  .side.mobile-open{transform:translateX(0)}
+  .mobileMembersOverlay{display:block;position:fixed;z-index:999;inset:64px 0 0;background:#0008;opacity:0;pointer-events:none;transition:opacity .24s ease;backdrop-filter:blur(2px)}
+  .mobileMembersOverlay.show{opacity:1;pointer-events:auto}
+  .mobileMembersBtn{display:grid}
+  .mobileDrawerClose{display:grid}
+  .bubble{max-width:87%}
+  #chatApp{height:calc(100dvh - 64px)}
 }
 
-/* Messages */
-.msg{
-  max-width:75%; padding:8px 10px; margin:4px 0; border-radius:8px; font-size:15px;
-  word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.1); display: flex; flex-direction: column;
+html,body{height:100%;overflow-x:hidden;overflow-y:auto}
+body{min-height:100dvh}
+#chatApp{height:calc(100dvh - 64px);min-height:0;overflow:hidden}
+.shell{height:100%;min-height:0;overflow:hidden}
+.main{height:100%;min-height:0;overflow:hidden}
+.messages{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.composerWrap{flex:0 0 auto;display:flex;flex-direction:column;position:relative}
+.typing{flex:0 0 18px}
+
+
+.actionPanel{display:none;order:3;align-self:center;width:calc(100% - 18px);box-sizing:border-box;margin:0 9px 7px;padding:9px;background:#10271e;border:1px solid var(--line);border-radius:11px;box-shadow:0 8px 24px #0006;position:static;inset:auto;transform:none;z-index:5}
+.actionPanel.show{display:block;order:3}.actionPanelTitle{font-size:11px;font-weight:800;color:#b9ccc3}.actionPanelSub{font-size:10px;color:var(--muted);margin:4px 0 7px}.actionPanelRow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.actionPanel input,.actionPanel textarea{flex:1;min-width:120px;background:#08120e;border:1px solid #29483b;border-radius:8px;color:var(--text);padding:8px;outline:0}.actionPanel textarea{resize:none;min-height:40px;max-height:90px}.actionPanel button{border:1px solid #315343;background:#173126;color:#dcece5;border-radius:8px;padding:7px 10px;font-size:11px}.actionPanel button.primaryAction{background:var(--green);color:#062015;border-color:var(--green);font-weight:800}.actionPanel button.dangerAction{color:#ffb0b0;border-color:#5b3030;background:#2a1515}.actionPanel .closeAction{margin-left:auto;border:0;background:transparent;color:#9eb5aa;font-size:16px;padding:0 5px}
+
+.selectedMsgActions{display:none;align-items:center;justify-content:flex-end;gap:6px;width:100%;box-sizing:border-box;padding:6px 10px;background:#0a1511;border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:static;order:1;flex:0 0 auto}
+.selectedMsgActions.show{display:flex}
+.selectedMsgActions button{border:1px solid #29483b;background:#10271e;color:#dcece5;border-radius:8px;padding:6px 10px;font-size:11px}
+.selectedMsgActions button:hover{background:#17382b}
+
+
+.
+.
+.
+.
+.
+.
+.
+
+.deletedMessage{color:#8fa79c;font-style:italic}
+
+.whyDeleteBar{display:none;flex:0 0 auto;width:100%;box-sizing:border-box;padding:7px 10px;gap:6px;align-items:center;justify-content:flex-end;background:#0a1511;border-top:1px solid var(--line);position:static;order:2}
+.whyDeleteBar.show{display:flex}
+.whyDeleteBar button{border:1px solid #29483b;background:#10271e;color:#dcece5;border-radius:8px;padding:7px 10px;font-size:11px;cursor:pointer}
+.whyDeleteBar button:nth-child(2){color:#ffb3b3}
+
+
+.creator-card{margin:0 auto 55px;width:min(720px,94%);display:flex;align-items:center;gap:18px;padding:18px 20px;background:linear-gradient(135deg,#10241b,#0b1712);border:1px solid #29483b;border-radius:20px;box-shadow:0 18px 50px #0005;position:relative;overflow:hidden}.creator-card:before{content:"";position:absolute;inset:-80px auto auto -50px;width:180px;height:180px;background:#25d36622;border-radius:50%;filter:blur(30px)}.creator-avatar{position:relative;flex:0 0 86px;width:86px;height:86px;border-radius:50%;object-fit:cover;display:block;border:2px solid rgba(32,220,118,.5);box-shadow:0 8px 24px rgba(0,0,0,.25)}.creator-copy{position:relative;min-width:0}.creator-kicker{font-size:9px;letter-spacing:1.4px;font-weight:900;color:#7de3a5}.creator-card h2{margin:3px 0 4px;font-size:22px}.creator-card p{margin:0;color:#91a79c;font-size:12px;line-height:1.55}.creator-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.creator-signature{margin-top:10px;color:#6f8d80;font-size:10px;letter-spacing:.2px}.creator-tags span{padding:5px 8px;border:1px solid #29483b;border-radius:999px;background:#0b1813;color:#b9ccc3;font-size:10px}@media(max-width:760px){
+.actionPanel{position:static!important;inset:auto!important;transform:none!important;width:calc(100% - 12px)!important;align-self:center!important;margin:0 6px 6px!important;z-index:5!important}
+.selectedMsgActions,.whyDeleteBar{position:static!important;transform:none!important;top:auto!important;bottom:auto!important;z-index:5!important}
+.selectedMsgActions button,.whyDeleteBar button{min-height:34px;padding:7px 10px}
 }
-.me{ background:#dcf8c6; margin-left:auto; border-top-right-radius: 0; }
-.other{ background:#fff; margin-right:auto; border-top-left-radius: 0; }
-.msg b { font-size: 12px; color: #075e54; margin-bottom: 2px; }
-.time{ font-size:10px; color: #999; text-align:right; margin-top: 2px; }
+@media(max-width:520px){.creator-card{align-items:flex-start;padding:16px}.creator-avatar{width:60px;height:60px;flex-basis:60px;border-radius:50%}.creator-card h2{font-size:19px}}
 
-/* Call Link Style */
-.call-link {
-  background: #e1ffc7; padding: 10px; border-radius: 5px; text-decoration: none; color: #075e54; display: block; margin-top: 5px; border: 1px solid #25d366;
-  font-weight: bold; text-align: center;
-}
+#landing{min-height:calc(100dvh - 64px);overflow:visible}
+.creator-card{margin-top:0;margin-bottom:80px}
 
-/* Footer Controls */
-.footer { display:flex; gap:5px; position: relative; }
-.icon-btn { width: 45px; border-radius: 50%; font-size: 20px; padding: 0; display: flex; align-items: center; justify-content: center; }
-.emoji-btn { background: #fff; color: #555; border: 1px solid #ccc; }
-.send-btn { background: #25d366; }
 
-/* Emoji Picker */
-#emojiPicker {
-  display: none; position: absolute; bottom: 60px; left: 0; background: #fff;
-  border: 1px solid #ccc; padding: 5px; border-radius: 5px; width: 100%;
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; height: 150px; overflow-y: auto;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-.emoji { font-size: 24px; cursor: pointer; text-align: center; padding: 5px; }
-.emoji:hover { background: #ddd; border-radius: 5px; }
 
+.creator-copyright{margin-top:8px;color:#5f7a70;font-size:9px;letter-spacing:.2px}
+
+</style>
+<style>
+.callModal{display:none;position:fixed;inset:0;background:#020806cc;backdrop-filter:blur(12px);z-index:1000;align-items:center;justify-content:center;padding:16px}.callModal.show{display:flex}.callCard{width:min(760px,96vw);max-height:92vh;background:#0a1711;border:1px solid #29483b;border-radius:22px;box-shadow:0 30px 90px #000b;overflow:hidden}.callTop{height:66px;padding:12px 16px;border-bottom:1px solid #20372e;display:flex;align-items:center;justify-content:space-between}.callTop b{display:block;font-size:15px}.callTop small{display:block;color:#8fa79c;font-size:11px;margin-top:2px}.callClose{width:36px;height:36px;border-radius:50%;border:1px solid #29483b;background:#102019;color:#fff;font-size:22px}.callLobby{padding:14px;display:grid;gap:8px;max-height:60vh;overflow:auto}.callPerson{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1px solid #203b30;background:#0d2119;color:#fff;border-radius:13px;text-align:left}.callPerson:hover{background:#133326;border-color:#2b644a}.callPersonAvatar,.incomingAvatar,.remoteAvatar{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:#1aaa59;color:#07110d;font-weight:900;flex:0 0 auto}.callPerson span:nth-child(2){flex:1}.callPerson small{display:block;color:#75e6a4;font-size:10px;margin-top:2px}.callPerson strong{font-size:18px}.noCallUsers{text-align:center;color:#91a79c;padding:28px 10px}.incomingCall{padding:28px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}.incomingText{flex:1;min-width:160px}.incomingText b,.incomingText span{display:block}.incomingText span{color:#91a79c;font-size:12px;margin-top:4px}.incomingActions{display:flex;gap:8px;width:100%;justify-content:center}.incomingActions button{border:0;border-radius:10px;padding:11px 18px;font-weight:800}.callAccept{background:#25d366;color:#07110d}.callReject{background:#2a1717;color:#ffb0b0}.callStage{position:relative;min-height:min(72vh,620px);background:#020604}.remoteVideo{width:100%;height:min(72vh,620px);display:block;object-fit:cover;background:#020604}.remotePlaceholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:radial-gradient(circle at 50% 35%,#163a2a,#030906 60%);color:#fff}.remotePlaceholder span{font-size:11px;color:#91a79c}.remoteAvatar{width:76px;height:76px;font-size:28px}.localVideo{position:absolute;right:14px;top:14px;width:150px;height:110px;object-fit:cover;border-radius:13px;border:2px solid #fff5;background:#06100b;box-shadow:0 10px 30px #0009}.callControls{position:absolute;bottom:18px;left:0;right:0;display:flex;justify-content:center;gap:10px}.callControls button{width:48px;height:48px;border-radius:50%;border:1px solid #395548;background:#102019;color:#fff;font-size:18px}.callControls .endCall{background:#c93b3b;border-color:#e15d5d;transform:rotate(135deg)}
+@media(max-width:760px){.callCard{width:100%;max-height:94vh;border-radius:18px}.callStage{min-height:68vh}.remoteVideo{height:68vh}.localVideo{width:112px;height:84px;right:10px;top:10px}.callControls{bottom:12px}.callControls button{width:44px;height:44px}.callLobby{max-height:65vh}}
 </style>
 </head>
 <body>
+<nav><div class="wrap nav"><div class="logo">Why<i>App</i></div><div id="connection" class="status">Connecting...</div></div></nav>
 
-<div class="header">
-  <div>WhyApp <span style="font-size:12px; opacity:0.7">v2.0</span></div>
-  <div id="status" style="font-size:12px;">Connecting...</div>
+<section id="landing">
+<header class="hero wrap"><span class="badge">Realtime rooms · Firebase · Built by Anuj</span><h1>WhyApp</h1><p>Room-based chat with realtime messages, typing and presence.</p></header>
+<main class="wrap auth">
+<section class="card"><h2>Create room</h2><p class="sub">Start a new room.</p>
+<div class="field"><label>Room name</label><input id="cr" autocomplete="off"></div>
+<div class="field"><label>Password</label><div class="pass"><input id="cp" type="password"><button class="show" data-target="cp">Show</button></div></div>
+<button class="primary" id="create">Create room</button><p class="note">For production, configure Firebase Realtime Database Security Rules before sharing the app publicly.</p></section>
+<section class="card"><h2>Join room</h2><p class="sub">Enter your details.</p>
+<div class="field"><label>Your name</label><input id="jn" autocomplete="nickname"></div>
+<div class="field"><label>Room name</label><input id="jr" autocomplete="off"></div>
+<div class="field"><label>Password</label><div class="pass"><input id="jp" type="password"><button class="show" data-target="jp">Show</button></div></div>
+<button class="primary" id="join">Join room</button><p class="note">Anonymous Firebase authentication is used so users do not need a signup form.</p></section>
+</main>
+<section class="creator-card">
+  <img class="creator-avatar creator-photo-main" src="anuj-shakya.jpg" alt="Anuj Shakya">
+  <div class="creator-copy">
+    <span class="creator-kicker">ABOUT THE CREATOR</span>
+    <h2>Anuj Shakya</h2>
+    <p>
+      Hi, I'm Anuj. WhyApp is a project I created with the idea of making
+      private, simple and realtime conversations easier on the web.
+      I enjoy building AI & tech projects, creating web apps and editing videos.
+      This project is part of my journey of learning, experimenting and creating
+      useful digital experiences.
+    </p>
+    <div class="creator-tags">
+      <span>🤖 AI & Tech</span>
+      <span>💻 Web Creator</span>
+      <span>🎬 Video Editor</span>
+      <span>🚀 Building Projects</span>
+    </div>
+    <div class="creator-signature">Built with curiosity by Anuj Shakya · WhyApp</div>
+    <div class="creator-copyright">© 2026 Anuj Shakya · WhyApp. All rights reserved.</div>
+  </div>
+</section>
+</section>
+
+<section id="chatApp" class="hidden">
+<div class="wrap shell">
+<aside class="side" id="sidePanel">
+<div class="profile"><div class="avatar" id="myAvatar">A</div><div><b id="myName">Guest</b><small id="myAbout">Online</small></div><button class="round" id="profileBtn">✎</button><button class="round mobileDrawerClose" id="mobileDrawerClose" type="button" aria-label="Close members">×</button></div>
+<div class="roombox"><div class="roomavatar" id="roomAvatar">💬</div><div><b id="roomTitleSide"></b><small id="memberCount">0 members</small></div></div>
+<button class="secondary" id="invite">🔗 Copy invite</button>
+<button class="secondary" id="leave">🚪 Leave room</button>
+<h4>Members</h4><div id="members"></div>
+</aside>
+<div class="mobileMembersOverlay" id="mobileMembersOverlay" aria-hidden="true"></div>
+<main class="main">
+<header class="head"><div><b id="title"></b><small id="statusText">Connecting...</small></div><div class="actions"><button class="round mobileMembersBtn" id="mobileMembersBtn" type="button" aria-label="Open members">👥</button><button class="round" id="call">☎</button><div class="menuWrap"><button class="round" id="more">⋮</button><div class="menu" id="menu"><button id="editRoom">✏️ Edit room name</button><button id="changePass">🔐 Change password</button><button id="deleteRoom" style="color:#ff8b8b">🗑️ Delete room</button></div></div></div></header>
+<div id="messages" class="messages"></div>
+<div class="typing" id="typing"><span id="typingText"></span><span class="typingDots"><i></i><i></i><i></i></span></div>
+<div class="composerWrap">
+<div class="selectedMsgActions" id="selectedMsgActions" aria-hidden="true">
+  <button type="button" id="selectedEdit">✎ Edit</button>
+  <button type="button" id="selectedDelete">🗑 Delete</button>
 </div>
-
-<div id="join">
-  <h3 style="text-align:center; color:#075e54;">Create/Join Room</h3>
-  <input id="name" placeholder="Your Name">
-  <input id="room" placeholder="Room Name (e.g. Family)">
-  <input id="pass" type="password" placeholder="Password">
-  <button onclick="joinRoom()">Enter Chat</button>
+<div class="whyDeleteBar" id="whyDeleteBar" aria-hidden="true">
+  <button type="button" id="whyDeleteForMe">Delete for me</button>
+  <button type="button" id="whyDeleteForEveryone">Delete for everyone</button>
+  <button type="button" id="whyDeleteCancel">Cancel</button>
 </div>
-
-<div id="chatApp">
-  <div id="chat"></div>
-  <div id="typing"></div>
-  
-  <div id="emojiPicker" style="display:none;"></div>
-
-  <div class="footer">
-    <button class="icon-btn emoji-btn" onclick="toggleEmoji()">😀</button>
-    <button class="icon-btn emoji-btn" onclick="startVideoCall()" style="color: #075e54;">🎥</button>
-    <input id="msg" placeholder="Type message..." autocomplete="off">
-    <button class="icon-btn send-btn" onclick="send()">➤</button>
+<div id="actionPanel" class="actionPanel">
+<div class="actionPanelRow"><div id="actionPanelTitle" class="actionPanelTitle"></div><button id="actionPanelClose" class="closeAction" type="button">×</button></div>
+<div id="actionPanelSub" class="actionPanelSub"></div><div id="actionPanelBody"></div>
+</div><div id="replyPreview" class="replyPreview"><span id="replyText"></span> <button id="cancelReply" style="float:right;border:0;background:none;color:#ff9a9a">×</button></div><div id="emoji" class="emoji"></div><div class="composer"><button class="round emojiBtn" id="emojiBtn" type="button" aria-label="Emoji">☺</button><textarea id="input" placeholder="Type a message..." rows="1"></textarea><button class="send" id="send">➤</button></div></div>
+</main></div></section>
+<div id="toast" class="toast"></div>
+<div id="callModal" class="callModal" aria-hidden="true">
+  <div class="callCard">
+    <div class="callTop">
+      <div><b id="callTitle">Video call</b><small id="callStatus">Choose someone to call</small></div>
+      <button type="button" class="callClose" id="callClose">×</button>
+    </div>
+    <div id="callLobby" class="callLobby"></div>
+    <div id="incomingCall" class="incomingCall hidden">
+      <div class="incomingAvatar" id="incomingAvatar">A</div>
+      <div class="incomingText"><b id="incomingName">Incoming call</b><span>is calling you</span></div>
+      <div class="incomingActions"><button id="acceptCall" class="callAccept">Accept</button><button id="rejectCall" class="callReject">Decline</button></div>
+    </div>
+    <div id="callStage" class="callStage hidden">
+      <video id="remoteVideo" class="remoteVideo" autoplay playsinline></video>
+      <div id="remotePlaceholder" class="remotePlaceholder"><div class="remoteAvatar" id="remoteAvatar">A</div><b id="remoteName">Connecting...</b><span id="remoteState">Calling…</span></div>
+      <video id="localVideo" class="localVideo" autoplay muted playsinline></video>
+      <div class="callControls">
+        <button id="muteCall" type="button">🎙</button><button id="cameraCall" type="button">📹</button><button id="endCall" class="endCall" type="button">☎</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
 <script>
-// ---------------------------------------------------------
-// ⚠️ APNI CONFIG YAHAN PASTE KAREIN
-// ---------------------------------------------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyBTylZZYTnrPzA-oPUUjP9oCe_pKvcGYUg",
-  authDomain: "igno-chat.firebaseapp.com",
-  databaseURL: "https://igno-chat-default-rtdb.firebaseio.com",
-  projectId: "igno-chat",
-  storageBucket: "igno-chat.firebasestorage.app",
-  messagingSenderId: "463033782139",
-  appId: "1:463033782139:web:68679a382a319bccb877de"
+// ===== CONFIGURATION =====
+// In production, use environment variables or a backend to inject these.
+
+// DOM helper must be declared before any early event setup below.
+const $ = id => document.getElementById(id);
+
+// ===== MOBILE KEYBOARD / VIEWPORT HELP =====
+function keepChatAtBottomSoon(){
+  const box = $("messages");
+  if (!box) return;
+  requestAnimationFrame(() => {
+    box.scrollTop = box.scrollHeight;
+    setTimeout(() => {
+      if (document.activeElement === $("input")) box.scrollTop = box.scrollHeight;
+    }, 120);
+  });
+}
+
+$("input").addEventListener("focus", keepChatAtBottomSoon);
+$("input").addEventListener("click", keepChatAtBottomSoon);
+
+if (window.visualViewport){
+  let viewportTimer = null;
+  window.visualViewport.addEventListener("resize", () => {
+    clearTimeout(viewportTimer);
+    viewportTimer = setTimeout(() => {
+      if (document.activeElement === $("input")) keepChatAtBottomSoon();
+    }, 80);
+  });
+}
+
+function resizeComposerInput(){
+  const input = $("input");
+  if (!input) return;
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, window.innerWidth <= 760 ? 88 : 110) + "px";
+}
+$("input").addEventListener("input", resizeComposerInput);
+resizeComposerInput();
+
+const firebaseConfig={
+ apiKey:"AIzaSyBTylZZYTnrPzA-oPUUjP9oCe_pKvcGYUg",
+ authDomain:"igno-chat.firebaseapp.com",
+ databaseURL:"https://igno-chat-default-rtdb.firebaseio.com",
+ projectId:"igno-chat",
+ storageBucket:"igno-chat.firebasestorage.app",
+ messagingSenderId:"463033782139",
+ appId:"1:463033782139:web:68679a382a319bccb877de"
 };
 
-// Init Firebase
-try { firebase.initializeApp(firebaseConfig); } catch(e){ console.error(e); }
+// ===== INIT FIREBASE =====
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const auth=firebase.auth();
 
-let uid, userRef, msgRef, roomName, userName;
+// ===== GLOBALS =====
+let uid=null;
+let clientId=sessionStorage.getItem("whyapp-client-id") || (crypto.randomUUID ? crypto.randomUUID() : ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)));
+let room="";
+let name="";
+let roomRef=null;
+let msgRef=null;
+let userRef=null;
+let typingTimer=null;
+let replyTarget=null; // for reply feature
+let messageListeners=null;
+let userListeners=null;
+sessionStorage.setItem("whyapp-client-id", clientId);
 
-// Auth
-firebase.auth().signInAnonymously().then(u => {
-  uid = u.user.uid;
-  document.getElementById("status").innerText = "Ready to Join";
-});
-
-// Join Room Logic
-function joinRoom(){
-  userName = document.getElementById("name").value.trim();
-  roomName = document.getElementById("room").value.trim().toLowerCase();
-  let p = document.getElementById("pass").value.trim();
-
-  if(!userName || !roomName || !p) return alert("Fill all fields");
-
-  // Check Room & Password
-  firebase.database().ref("rooms/"+roomName).once("value", s => {
-    if(!s.exists()){
-        // Create Room automatically if not exists
-        firebase.database().ref("rooms/"+roomName).set({password: p});
-    } else {
-        if(s.val().password !== p) return alert("Wrong Password!");
-    }
-
-    // UI Switch
-    document.getElementById("join").style.display="none";
-    document.getElementById("chatApp").style.display="flex";
-    document.getElementById("status").innerText = "Online";
-
-    // Presence
-    userRef = firebase.database().ref("rooms/"+roomName+"/users/"+uid);
-    userRef.set({ name: userName, online: true, typing: false });
-    userRef.onDisconnect().update({ online: false });
-
-    // Listeners
-    msgRef = firebase.database().ref("rooms/"+roomName+"/messages");
-    listenMessages();
-    listenTyping();
-  });
+// ===== DOM HELPERS =====
+function toast(msg) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove("show"), 2000);
 }
 
-// Send Message
-function send(){
-  let inp = document.getElementById("msg");
-  let t = inp.value.trim();
-  if(!t) return;
-  
-  msgRef.push({
-    text: t, type: 'text', name: userName, uid: uid,
-    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-  });
-  inp.value = "";
-  document.getElementById("emojiPicker").style.display = "none";
+function setConn(text, ok = false) {
+  const el = $("connection");
+  el.textContent = text;
+  el.className = "status" + (ok ? " ok" : "");
 }
 
-// Video Call Logic (Free Jitsi Link)
-function startVideoCall(){
-  let callID = roomName + "_" + Math.floor(Math.random()*1000);
-  let link = "https://meet.jit.si/" + callID;
-  
-  msgRef.push({
-    text: link, type: 'call', name: userName, uid: uid,
-    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
-  });
-}
-
-// Listen Messages
-function listenMessages(){
-  let chat = document.getElementById("chat");
-  msgRef.limitToLast(50).on("child_added", s => {
-    let m = s.val();
-    let d = document.createElement("div");
-    d.className = "msg " + (m.uid === uid ? "me" : "other");
-    
-    let content = "";
-    if(m.type === 'call'){
-       content = `<div style="text-align:center;">
-                    📞 <b>Video Call Started</b><br>
-                    <a href="${m.text}" target="_blank" class="call-link">Join Video Call</a>
-                  </div>`;
-    } else {
-       // Secure Text
-       let safeText = document.createElement('div');
-       safeText.textContent = m.text;
-       content = `<b>${m.name}</b><br>` + safeText.innerHTML;
-    }
-
-    d.innerHTML = content + `<div class='time'>${m.time}</div>`;
-    chat.appendChild(d);
-    chat.scrollTop = chat.scrollHeight;
-  });
-}
-
-// Typing Indicator
-function listenTyping(){
-  let inp = document.getElementById("msg");
-  inp.addEventListener("input", () => {
-    if(userRef) userRef.update({ typing: inp.value.length > 0 });
-  });
-  
-  firebase.database().ref("rooms/"+roomName+"/users").on("value", s => {
-    let txt = "";
-    s.forEach(u => {
-      if(u.key !== uid && u.val().typing) txt = u.val().name + " is typing...";
-    });
-    document.getElementById("typing").innerText = txt;
-  });
-}
-
-// Emoji Logic
-const emojis = ["😀","😂","😍","🥺","😎","😭","😡","👍","👎","🎉","❤️","🔥","💩","👻","💀","👀","🚀","💯"];
-const picker = document.getElementById("emojiPicker");
-emojis.forEach(e => {
-  let s = document.createElement("span");
-  s.className = "emoji"; s.innerText = e;
-  s.onclick = () => {
-    document.getElementById("msg").value += e;
-    document.getElementById("msg").focus();
+// ===== SANITIZATION (XSS protection) =====
+function sanitizeText(text) {
+  if (!text) return "";
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
   };
-  picker.appendChild(s);
+  return String(text).replace(/[&<>"'/]/g, s => map[s]);
+}
+
+// ===== PASSWORD HASHING (improved with salt) =====
+async function hashPassword(password, salt = null) {
+  if (!salt) {
+    salt = crypto.getRandomValues(new Uint8Array(16));
+  }
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + String.fromCharCode(...salt));
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  const saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, "0")).join("");
+  return saltHex + ":" + hex;
+}
+
+async function verifyPassword(password, storedHash) {
+  const parts = storedHash.split(":");
+  if (parts.length !== 2) {
+    // Legacy rooms used an unsalted SHA-256 hash.
+    const buffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+    const legacyHash = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return legacyHash === storedHash;
+  }
+  const saltHex = parts[0];
+  const expectedHash = parts[1];
+  const salt = new Uint8Array(saltHex.match(/.{1,2}/g).map(b => parseInt(b, 16)));
+  const computed = await hashPassword(password, salt);
+  const computedParts = computed.split(":");
+  return computedParts[1] === expectedHash;
+}
+
+// ===== AUTH =====
+auth.signInAnonymously()
+  .then(() => setConn("Connected", true))
+  .catch(err => {
+    setConn("Auth error");
+    toast("Auth error: " + err.message);
+  });
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    uid = user.uid;
+    setConn("Connected", true);
+  }
 });
 
-function toggleEmoji(){
-  picker.style.display = (picker.style.display === "none") ? "grid" : "none";
+// ===== SHOW/HIDE PASSWORD TOGGLES =====
+document.querySelectorAll(".show").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const input = $(btn.dataset.target);
+    if (!input) return;
+    const isPassword = input.type === "password";
+    input.type = isPassword ? "text" : "password";
+    btn.textContent = isPassword ? "Hide" : "Show";
+  });
+});
+
+// ===== ENTER KEY FLOW =====
+function setupEnterFlow() {
+  const pairs = [
+    ["cr", "cp"],
+    ["cp", null],
+    ["jn", "jr"],
+    ["jr", "jp"],
+    ["jp", null]
+  ];
+  pairs.forEach(([id, nextId]) => {
+    const el = $(id);
+    if (!el) return;
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (nextId) $(nextId).focus();
+        else {
+          // If no next field, trigger corresponding action
+          if (id === "cp") createRoom();
+          else if (id === "jp") joinRoom();
+        }
+      }
+    });
+  });
 }
+setupEnterFlow();
+
+// ===== CREATE ROOM =====
+async function createRoom() {
+  const rawRoom = $("cr").value.trim().toLowerCase();
+  const password = $("cp").value;
+  if (!uid) return toast("Connecting...");
+  if (!rawRoom || !password) return toast("Enter room name and password");
+  if (!/^[a-z0-9_-]{3,32}$/.test(rawRoom)) {
+    return toast("Use 3-32 letters, numbers, _ or -");
+  }
+
+  try {
+    const snap = await db.ref("rooms/" + rawRoom + "/meta").once("value");
+    if (snap.exists()) return toast("Room already exists");
+
+    const hashed = await hashPassword(password);
+    await db.ref("rooms/" + rawRoom).set({
+      meta: {
+        ownerUid: uid,
+        passwordHash: hashed,
+        createdAt: firebase.database.ServerValue.TIMESTAMP,
+        icon: "💬"
+      }
+    });
+
+    toast("Room created");
+    $("jr").value = rawRoom;
+    $("jp").focus();
+  } catch (err) {
+    console.error("Create room error:", err);
+    toast(err.code === "PERMISSION_DENIED" ? "Permission denied" : "Could not create room");
+  }
+}
+$("create").addEventListener("click", createRoom);
+
+// ===== JOIN ROOM =====
+async function joinRoom() {
+  const displayName = $("jn").value.trim();
+  const rawRoom = $("jr").value.trim().toLowerCase();
+  const password = $("jp").value;
+
+  if (!uid) return toast("Connecting...");
+  if (!displayName || !rawRoom || !password) return toast("Fill all details");
+
+  let snap;
+  try {
+    snap = await db.ref("rooms/" + rawRoom + "/meta").once("value");
+  } catch (err) {
+    console.error("Join room read error:", err);
+    return toast(err.code === "PERMISSION_DENIED" ? "Permission denied" : "Could not connect");
+  }
+
+  if (!snap.exists()) return toast("Room not found");
+
+  const roomData = snap.val() || {};
+  const valid = await verifyPassword(password, roomData.passwordHash || "");
+  if (!valid) return toast("Wrong password");
+
+  await enterRoom(rawRoom, displayName, roomData);
+}
+$("join").addEventListener("click", joinRoom);
+
+// ===== ENTER ROOM =====
+async function enterRoom(roomName, displayName, roomData) {
+  stopMessageListeners();
+  stopUserListeners();
+  room = roomName;
+  name = displayName;
+  roomRef = db.ref("rooms/" + room);
+  msgRef = roomRef.child("messages");
+  userRef = roomRef.child("users/" + uid);
+
+  // Switch UI
+  $("landing").classList.add("hidden");
+  $("chatApp").classList.remove("hidden");
+  document.body.classList.add("chat-active");
+
+  $("title").textContent = room;
+  $("roomTitleSide").textContent = room;
+  $("myName").textContent = name;
+  $("myAvatar").textContent = name[0].toUpperCase();
+  $("roomAvatar").textContent = roomData.icon || "💬";
+
+  // Register user
+  await userRef.set({
+    uid,
+    name,
+    online: true,
+    typing: false,
+    about: "Online",
+    joinedAt: firebase.database.ServerValue.TIMESTAMP
+  });
+  userRef.onDisconnect().update({
+    online: false,
+    typing: false,
+    lastSeen: firebase.database.ServerValue.TIMESTAMP
+  });
+
+  // Start listeners
+  listenMessages();
+  listenUsers();
+  listenTyping();
+  watchIncomingCalls();
+
+  $("input").focus();
+}
+
+// ===== MESSAGE LISTENERS =====
+function stopMessageListeners() {
+  if (!messageListeners || !messageListeners.ref) return;
+  messageListeners.ref.off("child_added", messageListeners.added);
+  messageListeners.ref.off("child_changed", messageListeners.changed);
+  messageListeners.ref.off("child_removed", messageListeners.removed);
+  messageListeners = null;
+}
+
+function listenMessages() {
+  stopMessageListeners();
+  if (!msgRef) return;
+  const ref = msgRef.limitToLast(100);
+  const added = snap => renderMessage(snap.key, snap.val());
+  const changed = snap => updateMessage(snap.key, snap.val());
+  const removed = snap => removeMessage(snap.key);
+  ref.on("child_added", added);
+  ref.on("child_changed", changed);
+  ref.on("child_removed", removed);
+  messageListeners = { ref, added, changed, removed };
+}
+
+function renderMessage(key, msg) {
+  if (msg && msg.deletedFor && msg.deletedFor[uid]) return;
+  if (document.querySelector(`[data-key="${CSS.escape(key)}"]`)) return;
+  const el = document.createElement("div");
+  el.className = "bubble" + (String(msg.uid) === String(uid) ? " mine" : "");
+  el.dataset.key = key;
+  paintMessage(el, key, msg);
+  $("messages").appendChild(el);
+  $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function paintMessage(el, key, msg) {
+  if (msg.deletedFor && msg.deletedFor[uid]) {
+    el.remove();
+    return;
+  }
+
+  if (msg.deleted) {
+    const isMineDeleted = String(msg.uid) === String(uid);
+    el.className = "bubble" + (isMineDeleted ? " mine" : "");
+    el.dataset.key = key;
+    el.innerHTML = `<div class="body deletedMessage">This message was deleted</div>`;
+    return;
+  }
+
+  const reactions = msg.reactions || {};
+  const counts = {};
+  Object.values(reactions).forEach(r => counts[r] = (counts[r] || 0) + 1);
+  const reactionHtml = Object.entries(counts)
+    .map(([r, c]) => `<span class="reaction">${sanitizeText(r)} ${c}</span>`)
+    .join("");
+
+  const isMine = String(msg.uid) === String(uid);
+  el.className = "bubble" + (isMine ? " mine" : "");
+  el.dataset.key = key;
+
+  el.innerHTML = `
+    <span class="swipeReply">↩</span>
+    ${msg.reply ? `<div class="replyQuote">↪ ${sanitizeText(msg.reply.name || "User")}: ${sanitizeText(msg.reply.text || "")}</div>` : ""}
+    <div class="name">${sanitizeText(msg.name || "User")}</div>
+    <div class="body">${sanitizeText(msg.text || "")}${msg.edited ? ' <span class="edited">(edited)</span>' : ""}</div>
+    <div class="meta">${new Date(msg.time || Date.now()).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})}</div>
+    ${reactionHtml ? `<div class="reactionRow">${reactionHtml}</div>` : ""}
+    <div class="msgActions">
+      <button type="button" data-action="reply">↩</button>
+      <button type="button" data-action="react">❤️</button>
+      ${isMine ? `<button type="button" data-action="edit">✎</button>` : ""}
+      ${isMine ? `<button type="button" data-action="delete">🗑</button>` : ""}
+    </div>
+  `;
+}
+
+function updateMessage(key, msg) {
+  const el = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+  if (msg && msg.deletedFor && msg.deletedFor[uid]) {
+    if (el) el.remove();
+    return;
+  }
+  if (el) {
+    paintMessage(el, key, msg);
+  } else if (msg && !msg.deleted) {
+    renderMessage(key, msg);
+  } else if (msg && msg.deleted) {
+    const restored = document.createElement("div");
+    restored.className = "bubble" + (String(msg.uid) === String(uid) ? " mine" : "");
+    restored.dataset.key = key;
+    paintMessage(restored, key, msg);
+    $("messages").appendChild(restored);
+  }
+}
+
+function removeMessage(key) {
+  const el = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+  if (el) el.remove();
+}
+
+// ===== REACTIONS =====
+const REACTIONS = ["❤️", "😂", "😮", "😢", "😡", "👍", "👏", "🔥", "😍", "🙏", "🎉", "💯"];
+
+// ===== MESSAGE ACTION HANDLER (clicks on msg actions) =====
+
+function showSelectedMsgActions(key){
+  const bar=$("selectedMsgActions");
+  if(!bar)return;
+  bar.dataset.key=key;
+  bar.classList.add("show");
+  bar.setAttribute("aria-hidden","false");
+}
+function hideSelectedMsgActions(){
+  const bar=$("selectedMsgActions");
+  if(!bar)return;
+  bar.classList.remove("show");
+  bar.removeAttribute("data-key");
+  bar.setAttribute("aria-hidden","true");
+}
+$("selectedEdit").onclick=async()=>{
+  const key=$("selectedMsgActions").dataset.key;
+  if(!key)return;
+  const snap=await msgRef.child(key).once("value"),m=snap.val();
+  if(!m || String(m.uid)!==String(uid) || m.deleted)return;
+  hideSelectedMsgActions();
+  openActionPanel("edit", {key, text:m.text || ""});
+};
+$("selectedDelete").onclick=async()=>{
+  const key=$("selectedMsgActions").dataset.key;
+  if(!key)return;
+  const snap=await msgRef.child(key).once("value"),m=snap.val();
+  if(!m || String(m.uid)!==String(uid) || m.deleted)return;
+  hideSelectedMsgActions();
+  openWhyDeleteBar(key);
+};
+
+$("messages").addEventListener("click", async e => {
+  // Reaction picker clicks
+  const pickBtn = e.target.closest(".reactionPicker button");
+  if (pickBtn) {
+    const bubble = pickBtn.closest(".bubble");
+    const key = bubble?.dataset.key;
+    if (!key) return;
+    const snap = await msgRef.child(key).once("value");
+    const msg = snap.val();
+    if (!msg) return;
+    const emoji = pickBtn.dataset.r;
+    const current = msg.reactions && msg.reactions[uid];
+    if (current === emoji) await msgRef.child(key).child("reactions").child(String(uid)).remove();
+    else await msgRef.child(key).child("reactions").child(String(uid)).set(emoji);
+    pickBtn.closest(".reactionPicker").classList.remove("open");
+    return;
+  }
+
+  // Action buttons
+  const btn = e.target.closest(".msgActions button");
+  if (!btn) return;
+  const bubble = btn.closest(".bubble");
+  const key = bubble?.dataset.key;
+  if (!key) return;
+  const snap = await msgRef.child(key).once("value");
+  const msg = snap.val();
+  if (!msg) return;
+
+  const action = btn.dataset.action;
+
+  if (action === "reply") {
+    replyTarget = { key, name: msg.name || "User", text: msg.text || "" };
+    $("replyText").textContent = `↩ ${replyTarget.name}: ${replyTarget.text}`;
+    $("replyPreview").classList.add("show");
+    $("input").focus();
+    return;
+  }
+
+  if (action === "react") {
+    openReactionPickerForBubble(bubble);
+    return;
+  }
+
+  if (action === "edit" || action === "delete") {
+    if (String(msg.uid) !== String(uid)) return;
+    showSelectedMsgActions(key);
+    return;
+  }
+});
+
+// Mobile messages use long-press for reactions.
+// A normal tap never opens the action row. Desktop hover/focus actions remain available.
+
+// Close reaction pickers on outside click
+document.addEventListener("click", e => {
+  if (!e.target.closest(".reactionPicker") && !e.target.closest("[data-action='react']")) {
+    document.querySelectorAll(".reactionPicker.open").forEach(el => el.classList.remove("open"));
+  }
+});
+
+// Cancel reply
+$("cancelReply").addEventListener("click", () => {
+  replyTarget = null;
+  $("replyPreview").classList.remove("show");
+  $("replyText").textContent = "";
+});
+
+// ===== TYPING INDICATOR =====
+function listenTyping() {
+  // Handled in users listener
+}
+
+function setTyping(on) {
+  if (!userRef) return;
+  clearTimeout(typingTimer);
+  userRef.update({ typing: on });
+  if (on) {
+    typingTimer = setTimeout(() => {
+      if (userRef) userRef.update({ typing: false });
+    }, 1500);
+  }
+}
+
+function stopTyping() {
+  clearTimeout(typingTimer);
+  if (userRef) userRef.update({ typing: false });
+}
+
+$("input").addEventListener("input", () => setTyping($("input").value.length > 0));
+$("input").addEventListener("blur", () => setTyping(false));
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopTyping();
+});
+window.addEventListener("beforeunload", () => stopTyping());
+
+// ===== USERS LISTENER =====
+function stopUserListeners() {
+  if (!userListeners || !userListeners.ref) return;
+  userListeners.ref.off("value", userListeners.value);
+  userListeners = null;
+}
+
+function listenUsers() {
+  stopUserListeners();
+  if (!roomRef) return;
+  const ref = roomRef.child("users");
+  const value = snap => {
+    const container = $("members");
+    container.innerHTML = "";
+    let onlineCount = 0;
+    const typingUsers = [];
+
+    snap.forEach(child => {
+      const u = child.val() || {};
+      const otherUid = u.uid || child.key;
+      if (u.online) onlineCount++;
+      if (u.typing && otherUid !== uid) typingUsers.push(u.name || "Someone");
+
+      const row = document.createElement("div");
+      row.className = "member";
+      row.innerHTML = `<span class="dot ${u.online ? "on" : ""}"></span>${sanitizeText(u.name || "User")}${u.online ? "" : " · offline"}`;
+      container.appendChild(row);
+    });
+
+    $("memberCount").textContent = onlineCount + " online";
+    $("statusText").textContent = onlineCount + " online";
+
+    const typingText = $("typingText");
+    const dots = $("typing").querySelector(".typingDots");
+    if (typingUsers.length) {
+      const label = typingUsers.length === 1
+        ? typingUsers[0] + " is typing"
+        : typingUsers.join(", ") + " are typing";
+      typingText.textContent = label;
+      dots.classList.add("show");
+      $("typing").title = label + "...";
+    } else {
+      typingText.textContent = "";
+      dots.classList.remove("show");
+      $("typing").removeAttribute("title");
+    }
+  };
+  ref.on("value", value);
+  userListeners = { ref, value };
+}
+
+// ===== MOBILE GESTURES: SWIPE TO REPLY + LONG-PRESS REACTION =====
+let swipeStartX = null;
+let swipeStartY = null;
+let swipeBubble = null;
+let longPressTimer = null;
+let longPressTriggered = false;
+let gestureMoved = false;
+
+function closeReactionPickers(except = null){
+  document.querySelectorAll(".reactionPicker.open").forEach(el => {
+    if (!except || el !== except) el.classList.remove("open");
+  });
+}
+
+function openReactionPickerForBubble(bubble){
+  if (!bubble || bubble.classList.contains("deleted")) return null;
+  let picker = bubble.querySelector(".reactionPicker");
+  if (!picker) {
+    picker = document.createElement("div");
+    picker.className = "reactionPicker";
+    picker.setAttribute("role", "menu");
+    REACTIONS.forEach(r => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = r;
+      b.dataset.r = r;
+      b.setAttribute("aria-label", "React " + r);
+      picker.appendChild(b);
+    });
+    bubble.appendChild(picker);
+  }
+  closeReactionPickers(picker);
+  picker.classList.add("open");
+  return picker;
+}
+
+function cancelLongPress(){
+  if (longPressTimer){
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+}
+
+$("messages").addEventListener("touchstart", e => {
+  const b = e.target.closest(".bubble");
+  if (!b || e.target.closest(".msgActions,.reactionPicker,.swipeReply")) return;
+
+  cancelLongPress();
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+  swipeBubble = b;
+  longPressTriggered = false;
+  gestureMoved = false;
+
+  longPressTimer = setTimeout(() => {
+    if (!swipeBubble || gestureMoved) return;
+    longPressTriggered = true;
+    swipeBubble.style.transform = "";
+    swipeBubble.classList.remove("swiping");
+    openReactionPickerForBubble(swipeBubble);
+    if (navigator.vibrate){
+      try { navigator.vibrate(18); } catch {}
+    }
+  }, 500);
+}, { passive: true });
+
+$("messages").addEventListener("touchmove", e => {
+  if (!swipeBubble || swipeStartX === null) return;
+
+  const x = e.touches[0].clientX;
+  const y = e.touches[0].clientY;
+  const deltaX = x - swipeStartX;
+  const deltaY = y - swipeStartY;
+
+  if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10){
+    gestureMoved = true;
+  }
+
+  if (Math.abs(deltaY) > Math.abs(deltaX) || Math.abs(deltaY) > 14){
+    cancelLongPress();
+    swipeBubble.style.transform = "";
+    swipeBubble.classList.remove("swiping");
+    return;
+  }
+
+  if (deltaX > 0){
+    cancelLongPress();
+    const dx = Math.max(0, Math.min(75, deltaX));
+    swipeBubble.style.transform = `translateX(${dx}px)`;
+    swipeBubble.classList.toggle("swiping", dx > 20);
+  }
+}, { passive: true });
+
+$("messages").addEventListener("touchend", async () => {
+  cancelLongPress();
+  if (!swipeBubble) return;
+
+  const b = swipeBubble;
+  const triggered = longPressTriggered;
+  const transform = b.style.transform || "";
+  const dx = parseFloat((transform.match(/-?\d+(?:\.\d+)?/) || ["0"])[0]);
+
+  b.style.transform = "";
+  b.classList.remove("swiping");
+  swipeBubble = null;
+  swipeStartX = null;
+  swipeStartY = null;
+
+  if (triggered || dx < 55) return;
+
+  const key = b.dataset.key;
+  if (!key) return;
+  const snap = await msgRef.child(key).once("value");
+  const msg = snap.val();
+  if (!msg) return;
+
+  replyTarget = { key, name: msg.name || "User", text: msg.text || "" };
+  $("replyText").textContent = `↩ ${replyTarget.name}: ${replyTarget.text}`;
+  $("replyPreview").classList.add("show");
+  $("input").focus();
+}, { passive: true });
+
+$("messages").addEventListener("touchcancel", () => {
+  cancelLongPress();
+  if (swipeBubble){
+    swipeBubble.style.transform = "";
+    swipeBubble.classList.remove("swiping");
+  }
+  swipeBubble = null;
+  swipeStartX = null;
+  swipeStartY = null;
+  longPressTriggered = false;
+});
+
+document.addEventListener("contextmenu", e => {
+  if (e.target.closest("#messages .bubble")) e.preventDefault();
+});
+
+
+// ===== POINTER SWIPE TO REPLY =====
+let whyPointerSwipe = null;
+$("messages").addEventListener("pointerdown", e => {
+  if (e.pointerType === "touch") return;
+  const bubble = e.target.closest(".bubble");
+  if (!bubble || e.button !== 0) return;
+  whyPointerSwipe = { bubble, startX: e.clientX, x: e.clientX };
+});
+$("messages").addEventListener("pointermove", e => {
+  if (!whyPointerSwipe) return;
+  const dx = Math.max(0, Math.min(75, e.clientX - whyPointerSwipe.startX));
+  whyPointerSwipe.x = e.clientX;
+  if (dx > 4) {
+    whyPointerSwipe.bubble.style.transform = `translateX(${dx}px)`;
+    whyPointerSwipe.bubble.classList.toggle("swiping", dx > 20);
+  }
+});
+$("messages").addEventListener("pointerup", async () => {
+  if (!whyPointerSwipe) return;
+  const s = whyPointerSwipe;
+  whyPointerSwipe = null;
+  const dx = s.x - s.startX;
+  s.bubble.style.transform = "";
+  s.bubble.classList.remove("swiping");
+  if (dx < 55) return;
+  const key = s.bubble.dataset.key;
+  const snap = await msgRef.child(key).once("value");
+  const msg = snap.val();
+  if (!msg) return;
+  replyTarget = { key, name: msg.name || "User", text: msg.text || "" };
+  $("replyText").textContent = `↩ ${replyTarget.name}: ${replyTarget.text}`;
+  $("replyPreview").classList.add("show");
+  $("input").focus();
+});
+$("messages").addEventListener("pointercancel", () => {
+  if (!whyPointerSwipe) return;
+  whyPointerSwipe.bubble.style.transform = "";
+  whyPointerSwipe.bubble.classList.remove("swiping");
+  whyPointerSwipe = null;
+});
+
+
+// ===== FRESH DELETE FLOW =====
+let whyDeleteKey = null;
+function openWhyDeleteBar(key){
+  whyDeleteKey=key;
+  $("whyDeleteBar").classList.add("show");
+  $("whyDeleteBar").setAttribute("aria-hidden","false");
+}
+function closeWhyDeleteBar(){
+  whyDeleteKey=null;
+  $("whyDeleteBar").classList.remove("show");
+  $("whyDeleteBar").setAttribute("aria-hidden","true");
+}
+$("whyDeleteCancel").onclick=closeWhyDeleteBar;
+$("whyDeleteForMe").onclick=async()=>{
+  const key=whyDeleteKey;if(!key)return;
+  await msgRef.child(key).child("deletedFor").child(String(uid)).set(true);
+  closeWhyDeleteBar();
+};
+$("whyDeleteForEveryone").onclick=async()=>{
+  const key=whyDeleteKey;if(!key)return;
+  const snap=await msgRef.child(key).once("value"),msg=snap.val();
+  if(!msg||String(msg.uid)!==String(uid)){closeWhyDeleteBar();return;}
+  await msgRef.child(key).update({
+    deleted:true,text:"",edited:false,reactions:null,
+    deletedAt:firebase.database.ServerValue.TIMESTAMP
+  });
+  closeWhyDeleteBar();
+};
+
+// ===== SEND MESSAGE =====
+async function sendMessage() {
+  const input = $("input");
+  const text = input.value.trim();
+  if (!text || !msgRef) return;
+
+  const payload = {
+    text,
+    name,
+    uid,
+    clientId,
+    time: firebase.database.ServerValue.TIMESTAMP
+  };
+
+  if (replyTarget) {
+    payload.reply = {
+      key: replyTarget.key,
+      name: replyTarget.name,
+      text: replyTarget.text
+    };
+  }
+
+  await msgRef.push(payload);
+  input.value = "";
+  setTyping(false);
+  $("emoji").classList.remove("open");
+  replyTarget = null;
+  $("replyPreview").classList.remove("show");
+  $("replyText").textContent = "";
+  input.focus();
+}
+
+$("send").addEventListener("click", sendMessage);
+$("input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
+
+// ===== EMOJI PICKER =====
+const EMOJIS = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","😉","😍","🥰","😘","😎","🤩","🥳","😏","😢","😭","😤","😠","😡","🤬","😱","🤔","🤗","😴","🤢","🤮","❤️","🧡","💛","💚","💙","💜","🖤","🤍","💔","💕","💞","💓","💗","💖","💘","👍","👎","👌","✌️","🤞","🤟","👏","🙌","🙏","💪","🔥","✨","🎉","💯","⭐","🌟","🚀","💡","🎯","💬","💎","⚡","🍕","🍔","🍟","🍿","🍩","🍫","☕","🍎","🍉","⚽","🏏","🎮","🎧","🎵","🎶","📱","💻","⌚","📷"];
+
+const emojiContainer = $("emoji");
+EMOJIS.forEach(emoji => {
+  const btn = document.createElement("button");
+  btn.textContent = emoji;
+  btn.addEventListener("click", () => {
+    const input = $("input");
+    input.value += emoji;
+    setTyping(true);
+    input.focus();
+  });
+  emojiContainer.appendChild(btn);
+});
+
+$("emojiBtn").addEventListener("click", () => {
+  $("emoji").classList.toggle("open");
+});
+
+// ===== MENU =====
+$("more").addEventListener("click", e => {
+  e.stopPropagation();
+  $("menu").classList.toggle("open");
+});
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".menuWrap")) $("menu").classList.remove("open");
+});
+
+// ===== COMPACT ACTION PANEL =====
+let panelMode = null;
+let panelData = {};
+
+function closeActionPanel(){
+  panelMode=null; panelData={};
+  $("actionPanel").classList.remove("show");
+  $("actionPanelTitle").textContent="";
+  $("actionPanelSub").textContent="";
+  $("actionPanelBody").innerHTML="";
+}
+
+function openActionPanel(mode,data={}){
+  panelMode=mode; panelData=data;
+  const title=$("actionPanelTitle"), sub=$("actionPanelSub"), body=$("actionPanelBody");
+  if(mode==="edit"){
+    title.textContent="Edit message";
+    sub.textContent="Edit here. The message stays in its original position.";
+    body.innerHTML='<div class="actionPanelRow"><textarea id="panelInput" rows="2"></textarea><button id="panelSave" class="primaryAction">Save</button></div>';
+    $("panelInput").value=data.text||"";
+  }else if(mode==="profile"){
+    title.textContent="Edit your name";
+    sub.textContent="This name is shown to people in the room.";
+    body.innerHTML='<div class="actionPanelRow"><input id="panelInput" maxlength="40" autocomplete="nickname"><button id="panelSave" class="primaryAction">Save</button></div>';
+    $("panelInput").value=data.name||"";
+  }else if(mode==="room"){
+    title.textContent="Rename room";
+    sub.textContent="Use 3-32 letters, numbers, _ or -";
+    body.innerHTML='<div class="actionPanelRow"><input id="panelInput" maxlength="32" autocomplete="off"><button id="panelSave" class="primaryAction">Save</button></div>';
+    $("panelInput").value=data.room||"";
+  }else if(mode==="password"){
+    title.textContent="Change password";
+    sub.textContent="Enter the current password and your new password.";
+    body.innerHTML='<div class="actionPanelRow"><input id="panelCurrent" type="password" placeholder="Current password" autocomplete="current-password"><input id="panelNew" type="password" placeholder="New password" minlength="4" autocomplete="new-password"><button id="panelSave" class="primaryAction">Save</button></div>';
+  }else if(mode==="delete"){
+    title.textContent="Delete room?";
+    sub.textContent="This removes the room and all messages. This cannot be undone.";
+    body.innerHTML='<div class="actionPanelRow"><button id="panelDelete" class="dangerAction">Delete room</button><button id="panelCancel">Cancel</button></div>';
+  }else if(mode==="deleteMessage"){
+    $("actionPanel").classList.remove("show");
+    if(data && data.key) openWhyDeleteBar(data.key);
+    return;
+  }
+  $("actionPanel").classList.add("show");
+  const focus=$("panelInput")||$("panelCurrent");
+  if(focus){focus.focus(); if(focus.select) focus.select();}
+}
+
+$("actionPanelClose").addEventListener("click",closeActionPanel);
+
+$("actionPanelBody").addEventListener("click",async e=>{
+  if(e.target.id==="panelCancel"){closeActionPanel();return;}
+  if(e.target.id==="panelDelete"){
+    if(!roomRef)return;
+    try{await roomRef.remove();closeActionPanel();location.reload();}
+    catch(err){console.error(err);toast("Could not delete room");}
+    return;
+  }
+  if(e.target.id!=="panelSave")return;
+
+  if(panelMode==="edit"){
+    const text=$("panelInput").value.trim();
+    if(!text)return toast("Message cannot be empty");
+    const snap=await msgRef.child(panelData.key).once("value"),msg=snap.val();
+    if(!msg || String(msg.uid)!==String(uid)){closeActionPanel();return;}
+    await msgRef.child(panelData.key).update({text,edited:true,editedAt:firebase.database.ServerValue.TIMESTAMP});
+    closeActionPanel();
+    return;
+  }
+
+  if(panelMode==="profile"){
+    const newName=$("panelInput").value.trim();
+    if(!newName)return toast("Enter a name");
+    name=newName;
+    await userRef.update({name});
+    $("myName").textContent=name;
+    $("myAvatar").textContent=name[0].toUpperCase();
+    closeActionPanel();
+    return;
+  }
+
+  if(panelMode==="room"){
+    const trimmed=$("panelInput").value.trim().toLowerCase();
+    if(!/^[a-z0-9_-]{3,32}$/.test(trimmed))return toast("Invalid room name");
+    if(trimmed===room){closeActionPanel();return;}
+    const exists=await db.ref("rooms/"+trimmed).once("value");
+    if(exists.exists())return toast("Room already exists");
+
+    const oldRoomRef=roomRef, oldMsgRef=msgRef, oldUserRef=userRef;
+    const snap=await oldRoomRef.once("value"), data=snap.val();
+    if(!data || !data.meta || data.meta.ownerUid!==uid)return toast("Only room owner can rename");
+    await db.ref("rooms/"+trimmed).set(data);
+    await oldRoomRef.remove();
+
+    stopMessageListeners();
+    stopUserListeners();
+    oldUserRef.onDisconnect().cancel();
+    oldUserRef.off();
+
+    room=trimmed;
+    roomRef=db.ref("rooms/"+room);
+    msgRef=roomRef.child("messages");
+    userRef=roomRef.child("users/"+uid);
+    $("messages").innerHTML="";
+
+    await userRef.set({uid,name,online:true,typing:false,about:"Online",joinedAt:firebase.database.ServerValue.TIMESTAMP});
+    userRef.onDisconnect().update({online:false,typing:false,lastSeen:firebase.database.ServerValue.TIMESTAMP});
+    $("title").textContent=room;
+    $("roomTitleSide").textContent=room;
+    listenMessages(); listenUsers(); listenTyping();
+    closeActionPanel();
+    return;
+  }
+
+  if(panelMode==="password"){
+    const old=$("panelCurrent").value.trim(), newPass=$("panelNew").value;
+    if(!old)return toast("Enter current password");
+    if(newPass.length<4)return toast("Password must be at least 4 characters");
+    const snap=await roomRef.child("meta").once("value"), data=snap.val()||{};
+    let valid=false;
+    if(data.passwordHash)valid=await verifyPassword(old,data.passwordHash);
+    if(!valid)return toast("Wrong current password");
+    const newHash=await hashPassword(newPass);
+    await roomRef.child("meta/passwordHash").set(newHash);
+    closeActionPanel();
+  }
+});
+
+$("actionPanelBody").addEventListener("keydown",e=>{
+  if(e.key!=="Enter" || e.shiftKey || e.target.tagName==="TEXTAREA")return;
+  e.preventDefault();
+  $("panelSave")?.click();
+});
+
+// ===== MOBILE MEMBERS DRAWER =====
+function setMobileMembers(open){
+  const side=$("sidePanel"), overlay=$("mobileMembersOverlay");
+  if(!side || !overlay) return;
+  side.classList.toggle("mobile-open", open);
+  overlay.classList.toggle("show", open);
+  overlay.setAttribute("aria-hidden", open ? "false" : "true");
+}
+$("mobileMembersBtn")?.addEventListener("click", () => setMobileMembers(true));
+$("mobileDrawerClose")?.addEventListener("click", () => setMobileMembers(false));
+$("mobileMembersOverlay")?.addEventListener("click", () => setMobileMembers(false));
+
+// ===== PROFILE =====
+$("profileBtn").addEventListener("click", () => openActionPanel("profile", {name}));
+
+// ===== INVITE =====
+$("invite").addEventListener("click", async () => {
+  const text = "WhyApp room: " + room;
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("Room name copied");
+  } catch {
+    toast(text);
+  }
+});
+
+// ===== PROFESSIONAL 1:1 VIDEO CALL =====
+$("call").addEventListener("click", openCallLobby);
+
+// ===== WHYAPP WEBRTC CALLING =====
+let callPc = null;
+let callStream = null;
+let activeCallRef = null;
+let activeCallId = null;
+let activeCallRole = null;
+let callUserListener = null;
+let callOfferListener = null;
+let callAnswerListener = null;
+let callStatusListener = null;
+let callCandidateListener = null;
+let pendingIncoming = null;
+let incomingCallListener = null;
+let callTarget = null;
+let callRemoteName = "";
+const RTC_CONFIG = { iceServers: [
+  {urls:"stun:stun.l.google.com:19302"},
+  {urls:"stun:stun1.l.google.com:19302"}
+]};
+function callEl(id){return document.getElementById(id)}
+function showCallModal(){callEl("callModal").classList.add("show");callEl("callModal").setAttribute("aria-hidden","false")}
+function hideCallModal(){callEl("callModal").classList.remove("show");callEl("callModal").setAttribute("aria-hidden","true")}
+function resetCallUI(){
+  callEl("callLobby").classList.remove("hidden"); callEl("callStage").classList.add("hidden"); callEl("incomingCall").classList.add("hidden");
+  callEl("callTitle").textContent="Video call"; callEl("callStatus").textContent="Choose someone to call";
+  callEl("remoteVideo").srcObject=null; callEl("localVideo").srcObject=null;
+  callEl("remotePlaceholder").classList.remove("hidden");
+}
+async function ensureCallMedia(){
+  if(callStream) return callStream;
+  if(!navigator.mediaDevices?.getUserMedia) throw new Error("Camera and microphone are not available in this browser.");
+  callStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  callEl("localVideo").srcObject=callStream;
+  return callStream;
+}
+function cleanupCallListeners(){
+  if(activeCallRef){
+    if(callOfferListener) activeCallRef.child("offer").off("value",callOfferListener);
+    if(callAnswerListener) activeCallRef.child("answer").off("value",callAnswerListener);
+    if(callStatusListener) activeCallRef.child("status").off("value",callStatusListener);
+    if(callCandidateListener){activeCallRef.child("candidates").child(activeCallRole==="caller"?"callee":"caller").off("child_added",callCandidateListener)}
+  }
+  callOfferListener=callAnswerListener=callStatusListener=callCandidateListener=null;
+  if(incomingCallListener && roomRef){roomRef.child("calls").off("child_added",incomingCallListener);incomingCallListener=null}
+}
+function stopCallMedia(){
+  if(callPc){try{callPc.onicecandidate=null;callPc.ontrack=null;callPc.onconnectionstatechange=null;callPc.close()}catch{}}
+  callPc=null;
+  if(callStream){callStream.getTracks().forEach(t=>t.stop());callStream=null}
+  callEl("remoteVideo").srcObject=null; callEl("localVideo").srcObject=null;
+}
+async function finishCall(updateRemote=true){
+  const ref=activeCallRef, id=activeCallId;
+  cleanupCallListeners(); stopCallMedia(); activeCallRef=null; activeCallId=null; activeCallRole=null; callTarget=null; pendingIncoming=null;
+  if(updateRemote && ref){try{await ref.child("status").set("ended")}catch{}}
+  hideCallModal(); resetCallUI();
+}
+function preparePeer(){
+  callPc=new RTCPeerConnection(RTC_CONFIG);
+  if(callStream) callStream.getTracks().forEach(t=>callPc.addTrack(t,callStream));
+  callPc.ontrack=e=>{if(e.streams[0]){callEl("remoteVideo").srcObject=e.streams[0];callEl("remotePlaceholder").classList.add("hidden");callEl("remoteState").textContent="Connected"}};
+  callPc.onconnectionstatechange=()=>{
+    const st=callPc?.connectionState;
+    if(st==="connected") callEl("remoteState").textContent="Connected";
+    if(st==="failed"||st==="disconnected") callEl("remoteState").textContent="Connection lost";
+    if(st==="closed") callEl("remoteState").textContent="Call ended";
+  };
+  return callPc;
+}
+function attachCandidateListener(ref, role){
+  const path=ref.child("candidates").child(role);
+  callCandidateListener=s=>{const c=s.val();if(c&&callPc)callPc.addIceCandidate(new RTCIceCandidate(c)).catch(()=>{})};
+  path.on("child_added",callCandidateListener);
+}
+async function openCallLobby(){
+  if(!roomRef || !uid) return toast("Join a room first");
+  showCallModal(); resetCallUI(); callEl("callStatus").textContent="Select an online member";
+  const lobby=callEl("callLobby"); lobby.innerHTML="";
+  const snap=await roomRef.child("users").once("value");
+  let count=0;
+  snap.forEach(ch=>{const u=ch.val()||{}; if((u.uid||ch.key)===uid||!u.online)return; count++; const b=document.createElement("button"); b.type="button"; b.className="callPerson"; b.innerHTML=`<span class="callPersonAvatar">${sanitizeText((u.name||"U").charAt(0).toUpperCase())}</span><span><b>${sanitizeText(u.name||"User")}</b><small>● Online</small></span><strong>📹</strong>`; b.onclick=()=>startOutgoingCall(u.uid,u.name||"User"); lobby.appendChild(b)});
+  if(!count) lobby.innerHTML='<div class="noCallUsers">No other member is online right now.</div>';
+}
+async function startOutgoingCall(targetUid,targetName){
+  try{
+    callTarget={uid:targetUid,name:targetName}; callRemoteName=targetName;
+    callEl("callLobby").classList.add("hidden"); callEl("callStage").classList.remove("hidden"); callEl("callTitle").textContent="Calling " + targetName; callEl("callStatus").textContent="Requesting camera and microphone…"; callEl("remoteName").textContent=targetName; callEl("remoteAvatar").textContent=targetName.charAt(0).toUpperCase();
+    await ensureCallMedia(); preparePeer();
+    activeCallRef=roomRef.child("calls").push(); activeCallId=activeCallRef.key; activeCallRole="caller";
+    callPc.onicecandidate=e=>{if(e.candidate)activeCallRef.child("candidates/caller").push(e.candidate.toJSON())};
+    const offer=await callPc.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:true}); await callPc.setLocalDescription(offer);
+    await activeCallRef.set({caller:uid,callerName:name,callee:targetUid,calleeName:targetName,status:"ringing",createdAt:firebase.database.ServerValue.TIMESTAMP,offer:{type:offer.type,sdp:offer.sdp}});
+    callAnswerListener=s=>{const a=s.val();if(a?.sdp&&!callPc.currentRemoteDescription)callPc.setRemoteDescription(new RTCSessionDescription(a)).then(()=>{callEl("callStatus").textContent="Connecting…"})}; activeCallRef.child("answer").on("value",callAnswerListener);
+    attachCandidateListener(activeCallRef,"callee");
+    callStatusListener=s=>{if(s.val()==="rejected"){toast(targetName+" declined the call");finishCall(false)}else if(s.val()==="ended")finishCall(false)}; activeCallRef.child("status").on("value",callStatusListener);
+  }catch(err){console.error(err);toast(err.message||"Could not start call");finishCall(false)}
+}
+function watchIncomingCalls(){
+  if(!roomRef||incomingCallListener)return;
+  incomingCallListener=s=>{const c=s.val();if(!c||c.status!=="ringing"||String(c.callee)!==String(uid))return; if(activeCallId)return; pendingIncoming={id:s.key,data:c,ref:s.ref}; callEl("incomingName").textContent=c.callerName||"Someone"; callEl("incomingAvatar").textContent=(c.callerName||"U").charAt(0).toUpperCase(); callEl("callLobby").classList.add("hidden"); callEl("callStage").classList.add("hidden"); callEl("incomingCall").classList.remove("hidden"); callEl("callTitle").textContent="Incoming video call"; callEl("callStatus").textContent=""; showCallModal()};
+  roomRef.child("calls").on("child_added",incomingCallListener);
+}
+async function acceptIncomingCall(){
+  if(!pendingIncoming)return; const p=pendingIncoming; const c=p.data;
+  try{
+    activeCallRef=p.ref; activeCallId=p.id; activeCallRole="callee"; callRemoteName=c.callerName||"User"; callTarget={uid:c.caller,name:callRemoteName};
+    callEl("incomingCall").classList.add("hidden"); callEl("callStage").classList.remove("hidden"); callEl("callTitle").textContent="Video call"; callEl("callStatus").textContent="Connecting…"; callEl("remoteName").textContent=callRemoteName; callEl("remoteAvatar").textContent=callRemoteName.charAt(0).toUpperCase();
+    await ensureCallMedia(); preparePeer(); callPc.onicecandidate=e=>{if(e.candidate)activeCallRef.child("candidates/callee").push(e.candidate.toJSON())};
+    await callPc.setRemoteDescription(new RTCSessionDescription(c.offer)); const answer=await callPc.createAnswer(); await callPc.setLocalDescription(answer); await activeCallRef.update({answer:{type:answer.type,sdp:answer.sdp},status:"accepted"});
+    attachCandidateListener(activeCallRef,"caller");
+    callStatusListener=s=>{if(s.val()==="ended")finishCall(false)}; activeCallRef.child("status").on("value",callStatusListener); pendingIncoming=null;
+  }catch(err){console.error(err);toast(err.message||"Could not accept call");finishCall(false)}
+}
+async function rejectIncomingCall(){if(!pendingIncoming)return;try{await pendingIncoming.ref.child("status").set("rejected")}catch{} pendingIncoming=null;hideCallModal();resetCallUI()}
+callEl("acceptCall").onclick=acceptIncomingCall; callEl("rejectCall").onclick=rejectIncomingCall;
+callEl("callClose").onclick=()=>{if(activeCallId)finishCall(true);else{pendingIncoming?rejectIncomingCall():(hideCallModal(),resetCallUI())}};
+callEl("endCall").onclick=()=>finishCall(true);
+callEl("muteCall").onclick=()=>{const t=callStream?.getAudioTracks()[0];if(!t)return;t.enabled=!t.enabled;callEl("muteCall").textContent=t.enabled?"🎙":"🔇"};
+callEl("cameraCall").onclick=()=>{const t=callStream?.getVideoTracks()[0];if(!t)return;t.enabled=!t.enabled;callEl("cameraCall").textContent=t.enabled?"📹":"🚫"};
+
+// ===== LEAVE =====
+$("leave").addEventListener("click", async () => {
+  if (userRef) await userRef.remove();
+  location.reload();
+});
+
+// ===== ROOM ADMIN ACTIONS =====
+$("editRoom").addEventListener("click", () => {
+  $("menu").classList.remove("open");
+  openActionPanel("room", {room});
+});
+
+$("changePass").addEventListener("click", () => {
+  $("menu").classList.remove("open");
+  openActionPanel("password");
+});
+
+$("deleteRoom").addEventListener("click", () => {
+  $("menu").classList.remove("open");
+  openActionPanel("delete");
+});
+
+
+// ===== MOBILE VIEWPORT =====
+(function setupMobileViewport(){
+  const root=document.documentElement;
+  const updateViewport=()=>{
+    const vv=window.visualViewport;
+    const h=vv ? vv.height : window.innerHeight;
+    root.style.setProperty("--why-vh", `${h}px`);
+    if(document.body.classList.contains("chat-active")){
+      requestAnimationFrame(()=>{
+        const box=document.getElementById("messages");
+        if(box && document.activeElement && document.activeElement.id==="input") box.scrollTop=box.scrollHeight;
+      });
+    }
+  };
+  updateViewport();
+  window.addEventListener("resize",updateViewport,{passive:true});
+  window.visualViewport?.addEventListener("resize",updateViewport,{passive:true});
+  window.visualViewport?.addEventListener("scroll",updateViewport,{passive:true});
+})();
+
 </script>
+<style>
+.typingDots{display:none;gap:1px;margin-left:3px}.typingDots.show{display:inline-flex}
+.typingDots i{font-style:normal;font-size:13px;animation:whyDot 1s infinite ease-in-out;opacity:.25}
+.typingDots i:nth-child(2){animation-delay:.15s}.typingDots i:nth-child(3){animation-delay:.3s}
+@keyframes whyDot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+.bubble{position:relative;touch-action:pan-y}
+.reactionPicker{display:none;position:absolute;bottom:calc(100% + 7px);left:0;z-index:100;gap:2px;padding:6px;background:#102019;border:1px solid #29483b;border-radius:15px;box-shadow:0 12px 30px #0009;width:max-content;max-width:min(330px,calc(100vw - 20px));overflow-x:auto;overscroll-behavior:contain}
+.reactionPicker.open{display:flex}.reactionPicker button{flex:0 0 auto;border:0;background:none;font-size:19px;padding:4px;border-radius:7px;line-height:1}.reactionPicker button:hover{background:#19352a}
+.bubble.mine .reactionPicker{left:auto;right:0}
+.swipeReply{position:absolute;right:8px;top:50%;opacity:0;color:#7de3a5;font-size:18px;pointer-events:none}.bubble.swiping .swipeReply{opacity:1}
+@media(max-width:760px){
+  .messages{padding:12px 10px 8px}
+  .bubble{max-width:86%}
+  .composer{padding:5px 7px;gap:5px}
+  .composer textarea{min-height:36px;max-height:88px;padding:7px 9px;border-radius:12px}
+  .emojiBtn{width:36px;height:36px;flex-basis:36px}
+  .send{width:38px;height:38px}
+  .reactionPicker{bottom:calc(100% + 6px);max-width:calc(100vw - 20px);padding:5px;border-radius:14px}
+  .reactionPicker button{font-size:18px;padding:4px}
+  .bubble.mine .reactionPicker{right:0;left:auto}
+  .bubble:not(.mine) .reactionPicker{left:0;right:auto}
+  .creator-card{margin-bottom:42px}
+}
+</style>
+
+<style>
+/* ===== MOBILE MEMBERS DRAWER ===== */
+.mobileMembersBtn,.mobileDrawerClose,.mobileMembersOverlay{display:none}
+@media(max-width:760px){
+  .mobileMembersBtn,.mobileDrawerClose{display:grid;place-items:center}
+  .mobileDrawerClose{font-size:20px;line-height:1}
+  .side .profile{position:relative}
+  .side .profile .mobileDrawerClose{margin-left:0}
+  .mobileMembersOverlay{display:block}
+}
+
+/* ===== MOBILE-ONLY RESPONSIVE POLISH ===== */
+@media (max-width:760px){
+  html,body{width:100%;max-width:100%;}
+  body.chat-active{height:100%;min-height:0;overflow:hidden;overscroll-behavior:none;}
+  body.chat-active nav{height:56px;flex:0 0 56px;}
+  .wrap{width:calc(100% - 20px);}
+  .hero{padding:34px 0 20px;}
+  .hero h1{font-size:clamp(44px,15vw,64px);letter-spacing:-3px;}
+  .hero p{font-size:12px;padding:0 8px;}
+  .auth{gap:10px;padding-bottom:28px;}
+  .card{padding:15px;border-radius:16px;}
+  .card h2{font-size:19px;}
+  .sub{font-size:12px;margin-bottom:14px;}
+  .field{margin-bottom:10px;}
+  .field input{padding:11px 10px;font-size:16px;}
+  .primary{padding:11px;font-size:14px;}
+
+  #chatApp{height:calc(var(--why-vh, 100dvh) - 56px)!important;min-height:0;}
+  .shell{height:100%;min-height:0;}
+  .head{height:56px;min-height:56px;padding:8px 10px;}
+  .head b{font-size:15px;}
+  .head small{font-size:9px;}
+  .actions{gap:5px;}
+  .round{width:35px;height:35px;}
+  .menu{top:40px;right:0;width:min(210px,calc(100vw - 20px));}
+  .messages{padding:10px 8px 6px;scroll-padding-bottom:8px;}
+  .bubble{max-width:min(86%,330px);padding:8px 10px;border-radius:13px;margin:5px 0;}
+  .name{font-size:9px;}
+  .body{font-size:14px;line-height:1.35;}
+  .meta{font-size:8px;}
+  .msgActions{gap:3px;margin-top:4px;}
+  .msgActions button{padding:5px 6px;font-size:10px;min-width:31px;min-height:31px;}
+
+  .composerWrap{padding-bottom:env(safe-area-inset-bottom,0px);}
+  .composer{padding:5px 7px;gap:5px;min-height:48px;}
+  .composer textarea{min-width:0;min-height:36px;max-height:76px;padding:7px 9px;font-size:16px;line-height:20px;border-radius:12px;}
+  .emojiBtn{width:35px;height:35px;flex:0 0 35px;font-size:16px;}
+  .send{width:38px;height:38px;flex:0 0 38px;}
+  .emoji{bottom:54px;left:6px;right:6px;max-height:min(38vh,220px);grid-template-columns:repeat(7,1fr);padding:6px;}
+  .emoji button{font-size:20px;padding:4px;}
+  .replyPreview{margin:0 7px 5px;padding:6px 8px;font-size:9px;}
+  .actionPanel{width:calc(100% - 12px)!important;margin:0 6px 5px!important;}
+
+  .creator-card{width:calc(100% - 20px);gap:12px;padding:14px;margin-bottom:35px;border-radius:16px;}
+  .creator-avatar{width:62px;height:62px;flex-basis:62px;}
+  .creator-card h2{font-size:19px;}
+  .creator-card p{font-size:11px;line-height:1.5;}
+  .creator-tags{gap:4px;margin-top:8px;}
+  .creator-tags span{font-size:9px;padding:4px 7px;}
+  .creator-signature,.creator-copyright{font-size:9px;}
+
+  /* Full-screen mobile calling UI. Desktop calling UI is untouched. */
+  .callModal{padding:0;align-items:stretch;justify-content:stretch;}
+  .callCard{width:100%;height:calc(var(--why-vh, 100dvh));max-height:none;border-radius:0;border:0;display:flex;flex-direction:column;}
+  .callTop{height:58px;min-height:58px;padding:9px 11px;flex:0 0 58px;}
+  .callTop b{font-size:14px;}
+  .callTop small{font-size:10px;}
+  .callClose{width:34px;height:34px;font-size:20px;}
+  .callLobby{flex:1;max-height:none;padding:10px;overflow:auto;-webkit-overflow-scrolling:touch;}
+  .callPerson{padding:12px 10px;border-radius:12px;min-height:58px;}
+  .callPersonAvatar,.incomingAvatar{width:40px;height:40px;}
+  .incomingCall{flex:1;align-content:center;justify-content:center;padding:24px 18px;gap:14px;}
+  .incomingText{text-align:center;flex:0 0 100%;min-width:0;}
+  .incomingActions{gap:10px;}
+  .incomingActions button{flex:1;max-width:150px;min-height:44px;}
+  .callStage{flex:1;min-height:0;height:auto;display:block;}
+  .remoteVideo{width:100%;height:100%;min-height:0;object-fit:cover;}
+  .localVideo{width:104px;height:78px;right:10px;top:10px;border-radius:11px;}
+  .callControls{bottom:calc(12px + env(safe-area-inset-bottom,0px));gap:12px;}
+  .callControls button{width:46px;height:46px;}
+  .remoteAvatar{width:68px;height:68px;font-size:25px;}
+}
+@media (max-width:380px){
+  .bubble{max-width:88%;}
+  .composer{gap:4px;padding-left:5px;padding-right:5px;}
+  .emojiBtn{width:33px;height:33px;flex-basis:33px;}
+  .send{width:36px;height:36px;flex-basis:36px;}
+  .creator-card{gap:9px;}
+  .creator-avatar{width:56px;height:56px;flex-basis:56px;}
+}
+</style>
 </body>
 </html>
+<style>.creator-photo{width:108px;height:108px;border-radius:50%;object-fit:contain;object-position:center;background:#0b1712;border:2px solid #18c96b;display:block}</style>
